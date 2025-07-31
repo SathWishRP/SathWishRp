@@ -1,3 +1,90 @@
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Apply blur to whole page except overlay
+    const app = document.getElementById('app') || document.body;
+
+    // Create login overlay
+    const loginOverlay = document.createElement('div');
+    loginOverlay.id = 'login-overlay';
+    Object.assign(loginOverlay.style, {
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.85)',
+      color: '#00aaff',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      textAlign: 'center',
+      padding: '0 20px',
+    });
+    loginOverlay.innerHTML = `
+      <h2 style="margin-bottom:20px; font-size:2rem; max-width: 360px;">
+        Login to Sath Wish RP Store 💻<br>
+        <small style="font-weight:400; font-size:1rem; color:#00aaffcc;">
+          Make an account and get into shopping!
+        </small>
+      </h2>
+      <input id="login-username" type="text" placeholder="Username" autocomplete="off" style="padding:10px; font-size:1.2rem; margin-bottom:10px; border-radius:6px; border:none; width: 280px; max-width: 90vw;" />
+      <input id="login-password" type="password" placeholder="Password" autocomplete="off" style="padding:10px; font-size:1.2rem; margin-bottom:10px; border-radius:6px; border:none; width: 280px; max-width: 90vw;" />
+      <button id="login-btn" style="padding:12px 0; width: 280px; max-width: 90vw; font-size:1.2rem; font-weight:700; border:none; border-radius:8px; background:#00aaff; color:#fff; cursor:pointer;">Login / Register</button>
+      <div id="login-error" style="margin-top:12px; color:#ff5555; font-weight:700; min-height:1.2rem;"></div>
+    `;
+    document.body.appendChild(loginOverlay);
+
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const loginBtn = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+
+    // Simple users database stored in localStorage
+    const usersKey = 'sathWishUsers';
+    let users = JSON.parse(localStorage.getItem(usersKey)) || {};
+
+    // Check if user is already logged in
+    const loggedUser = localStorage.getItem('sathWishLoggedUser');
+    if(loggedUser && users[loggedUser]) {
+      loginOverlay.style.display = 'none';
+      app.style.filter = 'none';
+      return;
+    }
+
+    // Initially blur the app
+    app.style.filter = 'blur(6px)';
+
+    loginBtn.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if(!username || !password) {
+        loginError.textContent = 'Please enter username and password.';
+        return;
+      }
+
+      if(users[username]) {
+        // User exists, check password
+        if(users[username] === password) {
+          // Success login
+          localStorage.setItem('sathWishLoggedUser', username);
+          loginOverlay.style.display = 'none';
+          app.style.filter = 'none';
+          loginError.textContent = '';
+        } else {
+          loginError.textContent = 'Incorrect password.';
+        }
+      } else {
+        // New user, create account
+        users[username] = password;
+        localStorage.setItem(usersKey, JSON.stringify(users));
+        localStorage.setItem('sathWishLoggedUser', username);
+        loginOverlay.style.display = 'none';
+        app.style.filter = 'none';
+        loginError.textContent = '';
+      }
+    });
+  });
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,7 +157,9 @@
   #blur-overlay {
     position: fixed;
     top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 200;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -78,13 +167,10 @@
     color: #00aaff;
     padding: 20px;
     text-align: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    z-index: 9999;
   }
   #blur-overlay h2 {
-    font-size: 2rem;
+    font-size: 2.8rem;
     margin-bottom: 18px;
-    max-width: 360px;
   }
   #blur-overlay input {
     width: 280px;
@@ -170,7 +256,7 @@
   }
   .card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 0 10px 3px #007bffcc;
+    box-shadow: 0 0 10px 3px #cc0000cc;
   }
   .card img {
     max-height: 160px;
@@ -184,7 +270,7 @@
     font-size: 1.5rem;
     margin: 0 0 12px;
     font-weight: 700;
-    color: #00aaff;
+    color: #cc0000;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -222,19 +308,19 @@
     cursor: not-allowed;
   }
   .buy-button.enabled {
-    background: #007bff;
+    background: #cc0000;
     color: white;
     cursor: pointer;
   }
   .buy-button.enabled:hover {
-    background: #005fbb;
+    background: #990000;
   }
   /* Cart icon */
   #cart-icon {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #007bffcc;
+    background: #cc0000cc;
     padding: 10px 14px;
     border-radius: 50%;
     color: white;
@@ -245,7 +331,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px #007bffaa;
+    box-shadow: 0 0 10px #cc0000bb;
   }
   #cart-count {
     position: absolute;
@@ -270,7 +356,7 @@
     max-height: 420px;
     background: rgba(20,20,20,0.95);
     border-radius: 14px;
-    box-shadow: 0 0 30px #007bffaa;
+    box-shadow: 0 0 30px #cc0000bb;
     padding: 20px;
     overflow-y: auto;
     z-index: 350;
@@ -278,7 +364,7 @@
     flex-direction: column;
   }
   #cart-popup h3 {
-    color: #00aaff;
+    color: #cc0000;
     margin-bottom: 16px;
     text-align: center;
   }
@@ -298,11 +384,11 @@
     font-weight: 700;
     margin-top: 14px;
     text-align: right;
-    color: #00d8ff;
+    color: #ff4444;
   }
   #checkout-btn-popup {
     margin-top: 20px;
-    background: #007bff;
+    background: #cc0000;
     border: none;
     padding: 14px 0;
     font-size: 1.2rem;
@@ -318,7 +404,7 @@
     cursor: not-allowed;
   }
   #checkout-btn-popup:hover:not(:disabled) {
-    background: #005fbb;
+    background: #990000;
   }
   /* Modal */
   #modal-overlay {
@@ -335,23 +421,23 @@
     background:#222;
     padding:32px 28px;
     border-radius:16px;
-    box-shadow:0 0 30px #00aaffaa;
+    box-shadow:0 0 30px #cc0000bb;
     max-width:400px;
-    color:#0ff;
+    color:#ff4444;
     text-align:center;
   }
   #modal h2 {
     margin-top:0;
     margin-bottom:16px;
     font-size:2rem;
-    color:#00ccff;
+    color:#ff4444;
   }
   #modal p {
     font-size:1.2rem;
     margin-bottom:24px;
   }
   #modal button {
-    background:#00aaff;
+    background:#cc0000;
     border:none;
     padding:12px 24px;
     border-radius:12px;
@@ -362,18 +448,18 @@
     transition:background 0.3s ease;
   }
   #modal button:hover {
-    background:#008fcc;
+    background:#990000;
   }
   footer {
     margin-top: 60px;
     padding: 20px;
     text-align: center;
     font-size: 1rem;
-    color: #00aaff;
+    color: #cc0000;
     letter-spacing: 1.2px;
   }
   footer a {
-    color: #00aaff;
+    color: #cc0000;
     text-decoration: underline;
     font-weight: 700;
   }
@@ -385,7 +471,7 @@
     background: #111;
   }
   #cart-items::-webkit-scrollbar-thumb {
-    background: #007bffaa;
+    background: #990000bb;
     border-radius: 6px;
   }
   /* Responsive */
@@ -423,7 +509,7 @@
 
       <div class="card" data-name="1,000 Coins" data-desc="Buy big stacks for your grind.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/7LyoJOQ.png" alt="1,000 Coins" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="1,000 Coins" />
         <h2>💰 1,000 Coins – $10</h2>
         <p>Buy big stacks for your grind.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -431,7 +517,7 @@
 
       <div class="card" data-name="2,000 Coins" data-desc="Double the fun, double the coins.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/3kUejnu.png" alt="2,000 Coins" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="2,000 Coins" />
         <h2>💰 2,000 Coins – $20</h2>
         <p>Double the fun, double the coins.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -447,7 +533,7 @@
 
       <div class="card" data-name="4,000 Coins" data-desc="Step up your game with more coins.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/qFcZk4t.png" alt="4,000 Coins" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="4,000 Coins" />
         <h2>💰 4,000 Coins – $40</h2>
         <p>Step up your game with more coins.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -455,7 +541,7 @@
 
       <div class="card" data-name="5,000 Coins" data-desc="Big coin bundle for serious grinders.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/YBJo8pl.png" alt="5,000 Coins" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="5,000 Coins" />
         <h2>💰 5,000 Coins – $50</h2>
         <p>Big coin bundle for serious grinders.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -465,7 +551,7 @@
 
       <div class="card" data-name="Gang Tier 1" data-desc="Access exclusive gang tier items and perks.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/CquoWEE.png" alt="Gang Tier 1" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Gang Tier 1" />
         <h2>🔥 Gang Tier 1 – $10</h2>
         <p>Access exclusive gang tier items and perks.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -473,7 +559,7 @@
 
       <div class="card" data-name="Gang Tier 2" data-desc="Better perks and exclusive items.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/XUvvr07.png" alt="Gang Tier 2" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Gang Tier 2" />
         <h2>🔥 Gang Tier 2 – $20</h2>
         <p>Better perks and exclusive items.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -481,17 +567,17 @@
 
       <div class="card" data-name="Gang Tier 3" data-desc="Top tier gang exclusives and perks.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/BUR9vNW.png" alt="Gang Tier 3" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Gang Tier 3" />
         <h2>🔥 Gang Tier 3 – $30</h2>
         <p>Top tier gang exclusives and perks.</p>
         <button class="buy-button" disabled>Add to Cart</button>
       </div>
 
-      <!-- Old gun and custom items -->
+      <!-- Old gun and custom items from original store -->
 
       <div class="card" data-name="Glock Drum w/ Switch + Beam" data-desc="Upgrade your street loadout. No cap.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/p46tqLr.png" alt="Glock Drum" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Glock Drum" />
         <h2>🔫 Glock Drum w/ Switch + Beam – $10</h2>
         <p>Upgrade your street loadout. No cap.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -499,7 +585,7 @@
 
       <div class="card" data-name="Blue Glock w/ Switch (2 pcs + 10k Ammo)" data-desc="Clean & custom for your RP grind.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/8VQXT6e.png" alt="Blue Glock" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Blue Glock" />
         <h2>🔵 Blue Glock w/ Switch (2 pcs + 10k Ammo) – $5</h2>
         <p>Clean & custom for your RP grind.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -507,7 +593,7 @@
 
       <div class="card" data-name="Custom Drug" data-desc="Create your own custom drug to sell or use in RP.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/VZZu0vm.png" alt="Custom Drug" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Custom Drug" />
         <h2>💊 Custom Drug – $30</h2>
         <p>Create your own custom drug to sell or use in RP.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -515,7 +601,7 @@
 
       <div class="card" data-name="4 Piece Custom Clothing" data-desc="Get unique clothes made for your style.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/yIgWi0Y.png" alt="4 Piece Custom Clothing" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="4 Piece Custom Clothing" />
         <h2>👕 4 Piece Custom Clothing – $15</h2>
         <p>Get unique clothes made for your style.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -523,7 +609,7 @@
 
       <div class="card" data-name="Custom Personal Gun" data-desc="Your personal custom gun, designed by you.">
         <span class="out-of-stock">Out of Stock</span>
-        <img src="https://i.imgur.com/1FvhbmE.png" alt="Custom Personal Gun" />
+        <img src="https://i.imgur.com/aZNUJQI.png" alt="Custom Personal Gun" />
         <h2>🔫 Custom Personal Gun – $50</h2>
         <p>Your personal custom gun, designed by you.</p>
         <button class="buy-button" disabled>Add to Cart</button>
@@ -550,8 +636,8 @@
 
   <footer>
     &copy; 2025 Sath Wish RP — Join our Discord for support and updates: 
-    <a href="https://discord.gg/83RSeyvAqR" target="_blank" rel="noopener noreferrer">
-      https://discord.gg/83RSeyvAqR
+    <a href="https://discord.gg/FkqyasFRAs" target="_blank" rel="noopener noreferrer">
+      https://discord.gg/FkqyasFRAs
     </a>
   </footer>
 
@@ -564,20 +650,6 @@
   };
 
   // Elements
-  const blurOverlay = document.getElementById('blur-overlay') || (() => {
-    const div = document.createElement('div');
-    div.id = 'blur-overlay';
-    div.innerHTML = `
-      <h2>Login to Access the Sath Wish RP Store</h2>
-      <input type="text" id="username-input" placeholder="Enter username" autocomplete="off" aria-label="Username"/>
-      <input type="password" id="password-input" placeholder="Enter password" autocomplete="off" aria-label="Password"/>
-      <button id="login-btn">Login</button>
-      <div id="blur-message" role="alert" aria-live="assertive"></div>
-    `;
-    document.body.appendChild(div);
-    return div;
-  })();
-
   const app = document.getElementById('app');
   const dashboard = document.getElementById('dashboard-section');
   const userDisplay = document.getElementById('user-display');
